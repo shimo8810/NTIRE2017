@@ -1,2 +1,1 @@
-# experiment_template
-実験コードとかのテンプレ
+# NTIRE2017 実装
