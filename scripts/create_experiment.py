@@ -36,7 +36,7 @@ def main():
         print('# add chainer file')
         ex_path.joinpath('train_{}.py'.format(args.name)).touch()
         ex_path.joinpath('dataset.py').touch()
-        ex_path.joinpath('net.py').touch()
+        ex_path.joinpath('network.py').touch()
         ex_path.joinpath('updater.py').touch()
         ex_path.joinpath('visualize.py').touch()
         print('create, train_{}.py, dataset.py, net.py, updater.py, visualize.py'.format(args.name))
