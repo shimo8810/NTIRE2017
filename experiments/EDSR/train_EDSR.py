@@ -15,8 +15,15 @@ import chainer
 from chainer import training
 from chainer.training import extensions
 
-from network import Baseline
+from network import EDSR
 from dataset import DIV2KDataset
+
+# このファイルの絶対パス
+FILE_PATH = Path(__file__).resolve().parent
+ROOT_PATH = FILE_PATH.parent.parent
+RESULT_PATH = ROOT_PATH.joinpath('results/EDSR')
+MODEL_PATH = ROOT_PATH.joinpath('models/EDSR')
+
 
 def main():
     parser = argparse.ArgumentParser(description='Chainer example: VAE')
@@ -30,21 +37,6 @@ def main():
                         help='number of epochs to learn')
     parser.add_argument('--batchsize', '-b', type=int, default=128,
                         help='learning minibatch size')
-    parser.add_argument('--dataset', '-d', type=str, choices=['coil', 'mmnist'], default='mmnist',
-                        help='using dataset')
-    # Hyper Parameter
-    parser.add_argument('--latent', '-l', default=100, type=int,
-                        help='dimention of encoded vector')
-    parser.add_argument('--coef1', type=float, default=1.0,
-                        help='')
-    parser.add_argument('--coef2', type=float, default=0.5,
-                        help='')
-    parser.add_argument('--coef3', type=float, default=1.0,
-                        help='')
-    parser.add_argument('--coef4', type=float, default=0.01,
-                        help='')
-    parser.add_argument('--ch', type=int, default=4,
-                        help='')
     args = parser.parse_args()
 
     print('### Learning Parameter ###')
@@ -54,10 +46,14 @@ def main():
     print('# epoch: {}'.format(args.epoch))
     print('')
 
-    model = Baseline()
+    out_path = RESULT_PATH.joinpath('EDSR')
+    print("# result dir : {}".format(out_path))
+    out_path.mkdir(parents=True, exist_ok=True)
 
-    train = DIV2KDataset(scale=2, size=48, dataset='train')
-    test = DIV2KDataset(scale=2, size=48, dataset='valid')
+    model = EDSR
+
+    train = DIV2KDataset(scale=2, size=64, dataset='train')
+    test = DIV2KDataset(scale=2, size=64, dataset='valid')
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
     test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
                     repeat=False, shuffle=False)
@@ -71,19 +67,22 @@ def main():
             train_iter, optimizer, device=0)
 
     # Set up a Trainer
-    trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=out_dir)
+    trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=out_path)
 
     #Set up Updater Extentions
     trainer.extend(extensions.Evaluator(test_iter, model, device=0))
     trainer.extend(extensions.ExponentialShift("alpha", 0.5), trigger=(100, 'epoch'))
     trainer.extend(extensions.dump_graph('main/loss'))
     trainer.extend(extensions.snapshot(
-        filename='snapshot_epoch-{.updater.epoch}'), trigger=(10, 'epoch'))
+        filename='snapshot_epoch-{.updater.epoch}'), trigger=(20, 'epoch'))
     trainer.extend(extensions.snapshot_object(
-        model, filename='model_epoch-{.updater.epoch}'), trigger=(10, 'epoch'))
+        model, filename='model_epoch-{.updater.epoch}'), trigger=(20, 'epoch'))
     trainer.extend(extensions.LogReport())
     trainer.extend(extensions.PrintReport(
             ['epoch', 'main/loss', 'validation/main/loss', 'elapsed_time']))
+    trainer.extend(extensions.PlotReport(['main/loss', 'validation/main/loss'],
+                              'epoch', file_name='loss.png'))
+    trainer.extend(extensions.ProgressBar())
 
     # start training
     trainer.run()

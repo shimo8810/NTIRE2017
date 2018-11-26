@@ -28,11 +28,6 @@ class DIV2KDataset(dataset_mixin.DatasetMixin):
 
             self.data.append([image_lr, image_hr])
 
-            # すべてのデータセットを読み込めないので
-            if dataset == 'valid' and c >= 50:
-                break
-            if dataset == 'train' and c >= 200:
-                break
 
     def __len__(self):
         return len(self.data)
