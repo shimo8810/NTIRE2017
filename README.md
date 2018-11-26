@@ -1,5 +1,5 @@
 # Implementations of Super-Resolution Model, NTIRE2017
-Implementations of Deep lerning-based Super-Resolution Model in [NTIRE2017](http://www.vision.ee.ethz.ch/ntire17/).
+Implementations of Deep lerning-based Super-Resolution Model in [NTIRE2017](http://www.vision.ee.ethz.ch/ntire17/).  
 All models are implemented by [Chainer](https://chainer.org/).
 
 ## Implemented Models
